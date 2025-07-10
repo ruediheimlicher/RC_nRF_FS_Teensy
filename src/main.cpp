@@ -10,6 +10,9 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+#include "display.h"
+
+
 #define LOOP_LED_PIN 2
 
 #define RADIO_PIN 3
@@ -184,10 +187,10 @@ uint8_t initradio(void)
 // 
 void init_LCD(void)
 {
-  lcd.init();           // Initialisierung
-  lcd.backlight();      // Hintergrundlicht an
-  lcd.setCursor(0, 0);  // Erste Zeile
-  lcd.print("Hallo Welt!");
+  //lcd.init();           // Initialisierung
+  //lcd.backlight();      // Hintergrundlicht an
+  //lcd.setCursor(0, 0);  // Erste Zeile
+  //lcd.print("Hallo Welt!");
 }
 
 void setup() 
@@ -251,10 +254,22 @@ data.aux2 = 1;
 */
   // Tasten
 
-  init_LCD();
+//init_LCD();
+
+initDisplay();
+   u8g2.clearDisplay(); 
+   //u8g2.setFont(u8g2_font_helvR14_tr); // https://github.com/olikraus/u8g2/wiki/fntlist12
+   u8g2.setFont(u8g2_font_t0_15_mr);  
+   u8g2.setCursor(0, 12);
+   u8g2.print(F("nRF24 T"));
+   //u8g2.setFont(u8g2_font_ncenB10_tr);
+   //u8g2.setFontMode(0);
+
+u8g2.sendBuffer(); 
 
 Serial.println("end setup");
-lcd.clear();
+//lcd.clear();
+
 }
 #define FAKTOR 4
 void loop() 
@@ -268,11 +283,14 @@ void loop()
   Joystick.Y(data.pitch*FAKTOR);
   Joystick.Z(data.roll*FAKTOR);
   Joystick.Zrotate(data.throttle*FAKTOR);
+  //uint8_t throttle = map(data.throttle,0,255,127,255);
+  //Joystick.Zrotate(throttle);
+  
   //Joystick.sliderLeft(data.throttle*FAKTOR);
   //Joystick.sliderRight(data.throttle*FAKTOR);
   //Joystick.slider(data.throttle*FAKTOR);
 
-  if(pakettimer > 20)
+  if(pakettimer > PAKETDELAY)
   {
     paketcounter++;
     Joystick.send_now();
@@ -280,14 +298,9 @@ void loop()
   }
   
 
-  //OSZIA_LO;
-  if (pakettimer > PAKETDELAY)
-  {
-    pakettimer = 0;
-
-  }
+  
   loopledcounter++;
-  if (loopledcounter > 0x4FFF)
+  if (loopledcounter > 0x2FFF)
   {
     //OSZIA_LO;
     loopcounter++;
@@ -308,19 +321,53 @@ void loop()
     Serial.print(" throttle: ");
     Serial.println(data.throttle);
     */
-    lcd.setCursor(0, 0);  // Erste Zeile
-    lcd.print(data.yaw);
+    //lcd.setCursor(0, 0);  // Erste Zeile
+    //lcd.print(data.yaw);
     
-    lcd.setCursor(5, 0);
-    lcd.print(data.pitch);
-    lcd.setCursor(10, 0);
-    lcd.print(data.roll);
-    lcd.setCursor(15, 0);
-    lcd.print(data.throttle);
+    //lcd.setCursor(5, 0);
+    //lcd.print(data.pitch);
+    //lcd.setCursor(10, 0);
+    //lcd.print(data.roll);
+    //lcd.setCursor(15, 0);
+    //lcd.print(data.throttle);
 
-    //lcd.setCursor(0, 1);
-    //lcd.print(paketcounter);
+    ////lcd.setCursor(0, 1);
+    ////lcd.print(paketcounter);
     //OSZIA_HI;
+    charh = u8g2.getMaxCharHeight() ;
+    uint8_t charw = u8g2.getMaxCharWidth() ;
+    //oled_delete(0,24,72);
+         // Yaw
+    data.roll = 127;
+      
+      char buf0[4];
+      sprintf(buf0, "%3d", data.yaw);
+      u8g2.drawStr(0,28,buf0);
+      
+      //oled_delete(0,44,72);
+      char buf1[4];
+       // Pitch
+      sprintf(buf1, "%3d", data.pitch);
+      u8g2.drawStr(0,42,buf1);
+      
+     
+
+      //u8g2.setCursor(0,42);
+      
+      //u8g2.print(data.pitch);
+      char buf[4];
+       //roll
+      sprintf(buf, "%3d", data.roll);
+      u8g2.drawStr(60,28,buf);
+
+     
+      // throttle
+      sprintf(buf, "%3d", data.throttle);
+      u8g2.drawStr(60,42,buf);
+      //u8g2.setCursor(60,42);
+      //u8g2.print(data.throttle);
+
+    u8g2.sendBuffer();
   }
   
    if( radiostatus & (1<<RADIOSTARTED))
