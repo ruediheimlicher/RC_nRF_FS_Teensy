@@ -272,8 +272,13 @@ Serial.println("end setup");
 
 }
 #define FAKTOR 4
+
 void loop() 
 {
+
+  //data.roll = 127;
+
+
   channels[YAW] = data.yaw;
   channels[PITCH] = data.pitch;
   channels[ROLL] = data.roll;
