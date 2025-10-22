@@ -12,6 +12,7 @@
 
 #include "display.h"
 
+#define ACK                   1
 
 #define LOOP_LED_PIN 2
 
@@ -41,6 +42,15 @@
 #define PITCH     1
 #define ROLL      2
 #define THROTTLE  3
+
+
+// ********************
+// ACK Payload ********
+bool newData = false;
+uint8_t ackData[4] = {31,32,33,34};
+// ********************
+// ********************
+
 
 
 #define OSZIA_PIN                                3
@@ -150,6 +160,18 @@ void recvData()
     radiocounter++;
     radio.read(&data, sizeof(Signal));
     lastRecvTime = millis();                                    // Receive the data | Data alınıyor
+
+    if(ACK)
+    {
+          // ********************
+    // ACK Payload ********
+    radio.writeAckPayload(1, &ackData, sizeof(ackData));
+    // ********************
+    // ********************
+
+    }
+    
+
   }
 }
 uint8_t initradio(void)
@@ -159,13 +181,34 @@ uint8_t initradio(void)
   radio.openReadingPipe(1,pipeIn);
   //radio.setChannel(100);
   radio.setChannel(124);
+
+if(ACK)
+{
+  // ********************
+  // ACK Payload ********
+  //radio.setAutoAck(false);
+  // ********************
+  // ********************
+   // ********************
+  // ACK Payload ********
+    radio.enableDynamicPayloads();
+    radio.enableAckPayload();
+  // ********************
+  
+}
+else
+{
   radio.setAutoAck(false);
+}
+  
+
   //radio.setDataRate(RF24_250KBPS);    // The lowest data rate value for more stable communication  | Daha kararlı iletişim için en düşük veri hızı.
   radio.setDataRate(RF24_2MBPS); // Set the speed of the transmission to the quickest available
   radio.setPALevel(RF24_PA_MAX);                           // Output power is set for maximum |  Çıkış gücü maksimum için ayarlanıyor.
   radio.setPALevel(RF24_PA_MIN); 
   radio.setPALevel(RF24_PA_MAX); 
   
+ 
   radio.startListening(); 
    if (radio.failureDetected) 
   {
@@ -257,15 +300,15 @@ data.aux2 = 1;
 //init_LCD();
 
 initDisplay();
-   u8g2.clearDisplay(); 
-   //u8g2.setFont(u8g2_font_helvR14_tr); // https://github.com/olikraus/u8g2/wiki/fntlist12
-   u8g2.setFont(u8g2_font_t0_15_mr);  
-   u8g2.setCursor(0, 12);
-   u8g2.print(F("nRF24 T"));
-   //u8g2.setFont(u8g2_font_ncenB10_tr);
-   //u8g2.setFontMode(0);
+   //u8g2clearDisplay(); 
+   ////u8g2setFont(u8g2_font_helvR14_tr); // https://github.com/olikraus/u8g2/wiki/fntlist12
+   //u8g2setFont(u8g2_font_t0_15_mr);  
+   //u8g2setCursor(0, 12);
+   //u8g2print(F("nRF24 T"));
+   ////u8g2setFont(u8g2_font_ncenB10_tr);
+   ////u8g2setFontMode(0);
 
-u8g2.sendBuffer(); 
+//u8g2sendBuffer(); 
 
 Serial.println("end setup");
 //lcd.clear();
@@ -339,40 +382,40 @@ void loop()
     ////lcd.setCursor(0, 1);
     ////lcd.print(paketcounter);
     //OSZIA_HI;
-    charh = u8g2.getMaxCharHeight() ;
-    uint8_t charw = u8g2.getMaxCharWidth() ;
+    //charh = u8g2getMaxCharHeight() ;
+    //uint8_t charw = u8g2getMaxCharWidth() ;
     //oled_delete(0,24,72);
          // Yaw
     data.roll = 127;
       
       char buf0[4];
       sprintf(buf0, "%3d", data.yaw);
-      u8g2.drawStr(0,28,buf0);
+      //u8g2drawStr(0,28,buf0);
       
       //oled_delete(0,44,72);
       char buf1[4];
        // Pitch
       sprintf(buf1, "%3d", data.pitch);
-      u8g2.drawStr(0,42,buf1);
+      //u8g2drawStr(0,42,buf1);
       
      
 
-      //u8g2.setCursor(0,42);
+      ////u8g2setCursor(0,42);
       
-      //u8g2.print(data.pitch);
+      ////u8g2print(data.pitch);
       char buf[4];
        //roll
       sprintf(buf, "%3d", data.roll);
-      u8g2.drawStr(60,28,buf);
+      //u8g2drawStr(60,28,buf);
 
      
       // throttle
       sprintf(buf, "%3d", data.throttle);
-      u8g2.drawStr(60,42,buf);
-      //u8g2.setCursor(60,42);
-      //u8g2.print(data.throttle);
+      //u8g2drawStr(60,42,buf);
+      ////u8g2setCursor(60,42);
+      ////u8g2print(data.throttle);
 
-    u8g2.sendBuffer();
+    //u8g2sendBuffer();
   }
   
    if( radiostatus & (1<<RADIOSTARTED))
